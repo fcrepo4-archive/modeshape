@@ -24,6 +24,7 @@
 package org.modeshape.jcr.value.binary;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -225,6 +226,10 @@ public abstract class AbstractBinaryStore implements BinaryStore {
      */
     protected final MimeTypeDetector detector() {
         return detector;
+    }
+
+    public BinaryValue storeValue(InputStream stream, StrategyHint strategyHint) throws BinaryStoreException {
+        return storeValue(stream);
     }
 
     /**

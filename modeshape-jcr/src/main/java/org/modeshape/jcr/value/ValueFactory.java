@@ -36,6 +36,7 @@ import org.modeshape.common.text.TextDecoder;
 import org.modeshape.common.text.TextEncoder;
 import org.modeshape.jcr.api.value.DateTime;
 import org.modeshape.jcr.cache.NodeKey;
+import org.modeshape.jcr.value.binary.StrategyHint;
 
 /**
  * A factory for {@link Property} values. Each create method may throw one of these exceptions when attempting to convert a
@@ -265,6 +266,7 @@ public interface ValueFactory<T> {
      * @throws IoException If an unexpected problem occurs while accessing the supplied stream (such as an {@link IOException}).
      */
     T create( InputStream stream ) throws ValueFormatException, IoException;
+    T create( InputStream stream, StrategyHint strategyHint ) throws ValueFormatException, IoException;
 
     /**
      * Create a value from the specified information by determining which other <code>create</code> method applies and delegating
