@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 public class StrategyBinaryStore implements BinaryStore {
 
-    protected Logger logger = Logger.getLogger(getClass());
+	public static final BasicStrategyHint DEFAULT_STRATEGY_HINT = new BasicStrategyHint("default");
+	protected Logger logger = Logger.getLogger(getClass());
 
     private Map<String, BinaryStore> binaryStores;
 
@@ -100,15 +101,11 @@ public class StrategyBinaryStore implements BinaryStore {
 
     @Override
     public BinaryValue storeValue(InputStream stream) throws BinaryStoreException {
-        return storeValue(stream, "default");
+        return storeValue(stream, DEFAULT_STRATEGY_HINT);
     }
 
-<<<<<<< HEAD:modeshape-jcr/src/main/java/org/modeshape/jcr/value/binary/ChainingBinaryStore.java
-    public BinaryValue storeValue(InputStream stream, Object storageHint) throws BinaryStoreException {
-        return binaryStores.get(storageHint).storeValue(stream);
-=======
-    public BinaryValue storeValue(InputStream stream, Object strategyHint) throws BinaryStoreException {
-        BinaryValue bv = binaryStores.get(strategyHint).storeValue(stream);
+    public BinaryValue storeValue(InputStream stream, StrategyHint strategyHint) throws BinaryStoreException {
+        BinaryValue bv = binaryStores.get(strategyHint.getHint()).storeValue(stream);
 
         Set<BinaryKey> keys = Collections.singleton(bv.getKey());
 
@@ -117,18 +114,17 @@ public class StrategyBinaryStore implements BinaryStore {
         while(it.hasNext()) {
             Map.Entry<String,BinaryStore> m = it.next();
 
-            if(!m.getKey().equals(strategyHint)) {
+            if(!m.getKey().equals(strategyHint.getHint())) {
                 m.getValue().markAsUnused(keys);
             }
         }
 
         return bv;
->>>>>>> ee0edd6... rename chainingbinarystore to strategybinarystore:modeshape-jcr/src/main/java/org/modeshape/jcr/value/binary/StrategyBinaryStore.java
     }
 
-    public void moveValue(BinaryKey key, Object strategyHintSource, Object strategyHintDestination) throws BinaryStoreException {
-        storeValue(binaryStores.get(strategyHintSource).getInputStream(key), strategyHintDestination);
-        binaryStores.get(strategyHintSource).markAsUnused(Collections.singleton(key));
+    public void moveValue(BinaryKey key, StrategyHint strategyHintSource, StrategyHint strategyHintDestination) throws BinaryStoreException {
+        storeValue(binaryStores.get(strategyHintSource.getHint()).getInputStream(key), strategyHintDestination);
+        binaryStores.get(strategyHintSource.getHint()).markAsUnused(Collections.singleton(key));
     }
 
     @Override

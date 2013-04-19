@@ -40,6 +40,7 @@ import org.modeshape.jcr.value.NamespaceRegistry;
 import org.modeshape.jcr.value.Reference;
 import org.modeshape.jcr.value.ReferenceFactory;
 import org.modeshape.jcr.value.ValueFactories;
+import org.modeshape.jcr.value.binary.StrategyHint;
 
 /**
  * The {@link ValueFactory} implementation for ModeShape.
@@ -147,6 +148,11 @@ public class JcrValueFactory implements org.modeshape.jcr.api.ValueFactory {
         return valueFactories.getBinaryFactory().create(value);
     }
 
+    public BinaryValue createBinary( InputStream value, StrategyHint strategyHint ) {
+        if (value == null) return null;
+        return valueFactories.getBinaryFactory().create(value, strategyHint);
+    }
+
     @Override
     public JcrValue createValue( Calendar value ) {
         if (value == null) return null;
@@ -201,7 +207,7 @@ public class JcrValueFactory implements org.modeshape.jcr.api.ValueFactory {
 
     @Override
     public String createName( String localName ) {
-        return valueFactories.getNameFactory().create(null, localName).getString();
+        return valueFactories.getNameFactory().create((String)null, localName).getString();
     }
 
     @Override

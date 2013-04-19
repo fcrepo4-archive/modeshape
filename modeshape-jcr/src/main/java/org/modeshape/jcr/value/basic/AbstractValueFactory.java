@@ -45,6 +45,7 @@ import org.modeshape.jcr.value.Reference;
 import org.modeshape.jcr.value.ValueFactories;
 import org.modeshape.jcr.value.ValueFactory;
 import org.modeshape.jcr.value.ValueFormatException;
+import org.modeshape.jcr.value.binary.StrategyHint;
 
 /**
  * Abstract {@link ValueFactory}.
@@ -368,6 +369,11 @@ public abstract class AbstractValueFactory<T> implements ValueFactory<T> {
                 return create(valueIterable.iterator());
             }
         };
+    }
+
+    @Override
+    public T create( InputStream stream, StrategyHint strategyHint ) throws ValueFormatException, IoException {
+        return create(stream);
     }
 
     protected static class ConvertingIterator<ValueType> implements Iterator<ValueType> {

@@ -84,6 +84,7 @@ public interface BinaryStore {
      * @throws BinaryStoreException if there any unexpected problem
      */
     BinaryValue storeValue( InputStream stream ) throws BinaryStoreException;
+    BinaryValue storeValue( InputStream stream, StrategyHint strategyHint ) throws BinaryStoreException;
 
     /**
      * Get an {@link InputStream} to the binary content with the supplied key.
