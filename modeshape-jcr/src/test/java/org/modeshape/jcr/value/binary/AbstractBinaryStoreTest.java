@@ -183,10 +183,14 @@ public abstract class AbstractBinaryStoreTest extends AbstractTransactionalTest 
     public void shouldExtractAndStoreMimeTypeWhenDetectorConfigured() throws RepositoryException, IOException {
         getBinaryStore().setMimeTypeDetector(new DummyMimeTypeDetector());
         BinaryValue binaryValue = getBinaryStore().storeValue(new ByteArrayInputStream(IN_MEMORY_BINARY));
-        assertNull(((AbstractBinaryStore)getBinaryStore()).getStoredMimeType(binaryValue));
+        if(getBinaryStore() instanceof AbstractBinaryStore) {
+            assertNull(((AbstractBinaryStore)getBinaryStore()).getStoredMimeType(binaryValue));
+        }
         // unclean stuff... a getter modifies silently data
         assertEquals(DummyMimeTypeDetector.DEFAULT_TYPE, getBinaryStore().getMimeType(binaryValue, "foobar.txt"));
-        assertEquals(DummyMimeTypeDetector.DEFAULT_TYPE, ((AbstractBinaryStore)getBinaryStore()).getStoredMimeType(binaryValue));
+        if(getBinaryStore() instanceof AbstractBinaryStore) {
+            assertEquals(DummyMimeTypeDetector.DEFAULT_TYPE, ((AbstractBinaryStore)getBinaryStore()).getStoredMimeType(binaryValue));
+        }
     }
 
     @Test
@@ -204,7 +208,9 @@ public abstract class AbstractBinaryStoreTest extends AbstractTransactionalTest 
             extractedText = binaryStore.getText(binaryValue);
         }
         assertEquals(DummyTextExtractor.EXTRACTED_TEXT, extractedText);
-        assertEquals(DummyTextExtractor.EXTRACTED_TEXT, ((AbstractBinaryStore)binaryStore).getExtractedText(binaryValue));
+        if(binaryStore instanceof AbstractBinaryStore) {
+            assertEquals(DummyTextExtractor.EXTRACTED_TEXT, ((AbstractBinaryStore)binaryStore).getExtractedText(binaryValue));
+        }
     }
 
     protected static final class DummyMimeTypeDetector implements MimeTypeDetector {
