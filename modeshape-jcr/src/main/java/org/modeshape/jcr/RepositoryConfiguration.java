@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -79,7 +80,9 @@ import org.modeshape.jcr.clustering.DefaultChannelProvider;
 import org.modeshape.jcr.security.AnonymousProvider;
 import org.modeshape.jcr.security.JaasProvider;
 import org.modeshape.jcr.value.binary.AbstractBinaryStore;
+import org.modeshape.jcr.value.binary.BinaryStore;
 import org.modeshape.jcr.value.binary.BinaryStoreException;
+import org.modeshape.jcr.value.binary.StrategyBinaryStore;
 import org.modeshape.jcr.value.binary.DatabaseBinaryStore;
 import org.modeshape.jcr.value.binary.FileSystemBinaryStore;
 import org.modeshape.jcr.value.binary.TransientBinaryStore;
@@ -342,6 +345,12 @@ public class RepositoryConfiguration {
          */
         public static final String BINARY_STORAGE = "binaryStorage";
 
+
+        /**
+         * The name for the field whose value is a document containing binary storage information.
+         */
+        public static final String BINARY_STORAGE_STRATEGY_STORES = "binaryStores";
+
         /**
          * The name for the field whose value is a document containing security information.
          */
@@ -598,6 +607,7 @@ public class RepositoryConfiguration {
         public static final String BINARY_STORAGE_TYPE_FILE = "file";
         public static final String BINARY_STORAGE_TYPE_CACHE = "cache";
         public static final String BINARY_STORAGE_TYPE_DATABASE = "database";
+        public static final String BINARY_STORAGE_TYPE_STRATEGY = "strategy";
         public static final String BINARY_STORAGE_TYPE_CUSTOM = "custom";
 
     }
@@ -1149,9 +1159,9 @@ public class RepositoryConfiguration {
             return binaryStorage.getLong(FieldName.MINIMUM_STRING_SIZE, getMinimumBinarySizeInBytes());
         }
 
-        public AbstractBinaryStore getBinaryStore() throws Exception {
+        public BinaryStore getBinaryStore() throws Exception {
             String type = binaryStorage.getString(FieldName.TYPE, "transient");
-            AbstractBinaryStore store = null;
+            BinaryStore store = null;
             if (type.equalsIgnoreCase("transient")) {
                 store = TransientBinaryStore.get();
             } else if (type.equalsIgnoreCase("file")) {
@@ -1187,6 +1197,24 @@ public class RepositoryConfiguration {
                 // String cacheTransactionManagerLookupClass = binaryStorage.getString(FieldName.CACHE_TRANSACTION_MANAGER_LOOKUP,
                 // Default.CACHE_TRANSACTION_MANAGER_LOOKUP);
                 store = new InfinispanBinaryStore(cacheContainer, dedicatedCacheContainer, metadataCacheName, blobCacheName);
+            } else if (type.equalsIgnoreCase("strategy")) {
+
+                Map<String, BinaryStore> binaryStores = new LinkedHashMap<String, BinaryStore>();
+
+                Document binaryStoresConfiguration = binaryStorage.getDocument(FieldName.BINARY_STORAGE_STRATEGY_STORES);
+
+                for (String sourceName : binaryStoresConfiguration.keySet()) {
+                    Document binaryStoreConfig = binaryStoresConfiguration.getDocument(sourceName);
+                    binaryStores.put(sourceName, new BinaryStorage(binaryStoreConfig).getBinaryStore());
+                }
+
+                // default store is mandatory
+                if (!binaryStores.containsKey("default")) {
+                    throw new BinaryStoreException(JcrI18n.missingVariableValue.text("default"));
+                }
+
+                store = new StrategyBinaryStore(binaryStores);
+
             } else if (type.equalsIgnoreCase("custom")) {
                 classname = binaryStorage.getString(FieldName.CLASSNAME);
                 classPath = binaryStorage.getString(FieldName.CLASSLOADER);
